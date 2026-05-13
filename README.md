@@ -30,7 +30,8 @@ The analysis therefore considers:
 
 Dataset: Behavioral Risk Factor Surveillance System 2022  
 Source: Kaggle  
-Kaggle identifier: `ariaxiong/behavioral-risk-factor-surveillance-system-2022`
+Kaggle identifier: `ariaxiong/behavioral-risk-factor-surveillance-system-2022`  
+Dataset link: https://www.kaggle.com/datasets/ariaxiong/behavioral-risk-factor-surveillance-system-2022
 
 Raw dataset size:
 
