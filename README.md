@@ -1,193 +1,281 @@
-# Module-5
-# Predicting Self-Reported MI/CHD from BRFSS 2022
+# Module 5: Predicting Self-Reported MI/CHD from BRFSS 2022
 
 ## Project overview
 
-This project uses the 2022 Behavioral Risk Factor Surveillance System (BRFSS) dataset to predict self-reported myocardial infarction or coronary heart disease. The task is framed as a supervised binary classification problem.
+This repository contains the reproducible Google Colab workflow for a supervised machine-learning analysis of self-reported myocardial infarction or coronary heart disease (MI/CHD) status using the 2022 Behavioral Risk Factor Surveillance System (BRFSS) dataset.
 
-The critical focus is not simply whether machine learning can classify self-reported MI/CHD. Instead, the project evaluates whether increasingly complex models provide meaningful improvement over an interpretable logistic regression baseline once class imbalance, threshold behaviour, calibration, runtime, interpretability and subgroup performance are considered.
+The project does not simply ask which model has the highest ROC-AUC. Instead, it evaluates whether increasingly complex tabular machine-learning models provide a practically meaningful improvement over an interpretable logistic regression baseline once class imbalance, threshold behaviour, calibration, runtime, stability, interpretability and subgroup error patterns are considered.
 
-The model should be interpreted as a population-level, survey-based risk stratification analysis. It is not a clinical diagnostic model.
+The final model should be interpreted as a survey-based classifier of reported MI/CHD status. It is not a clinical diagnostic model, individual cardiovascular risk calculator or deployable decision-support system.
+
+---
 
 ## Research question
 
-To what extent do increasingly complex machine learning models improve prediction of self-reported myocardial infarction or coronary heart disease from BRFSS 2022 survey data, and how do performance gains compare with trade-offs in interpretability, threshold behaviour, calibration, runtime and fairness?
+To what extent do increasingly complex machine-learning models improve classification of self-reported MI/CHD from BRFSS 2022 survey data, and how do performance gains compare with trade-offs in interpretability, calibration, threshold behaviour, runtime, stability and subgroup error behaviour?
 
-## Critical angle
-
-Many applied machine-learning projects select the model with the highest headline ROC-AUC. This project takes a more critical approach. It asks whether model complexity produces practically meaningful improvement in an imbalanced healthcare classification task.
-
-The analysis therefore considers:
-
-- whether XGBoost, Random Forest and MLP models materially outperform logistic regression;
-- whether ROC-AUC alone is sufficient for judging model usefulness;
-- how sensitivity, precision, specificity and F1-score change with threshold choice;
-- whether more complex models justify reduced interpretability or higher computational cost;
-- whether model performance appears uneven across available demographic subgroups;
-- whether predicted probabilities are suitable for risk interpretation.
+---
 
 ## Dataset
 
-Dataset: Behavioral Risk Factor Surveillance System 2022  
-Source: Kaggle  
-Kaggle identifier: `ariaxiong/behavioral-risk-factor-surveillance-system-2022`  
-Dataset link: https://www.kaggle.com/datasets/ariaxiong/behavioral-risk-factor-surveillance-system-2022
+**Dataset:** Behavioral Risk Factor Surveillance System 2022
+**Source:** Kaggle mirror of BRFSS 2022
+**Kaggle identifier:** `ariaxiong/behavioral-risk-factor-surveillance-system-2022`
+**Dataset link:** https://www.kaggle.com/datasets/ariaxiong/behavioral-risk-factor-surveillance-system-2022
 
-Raw dataset size:
+The raw dataset is not stored in this repository. The notebook downloads it programmatically using `kagglehub`.
 
-- 445,132 rows
-- 326 variables
+| Item                                |                        Value |
+| ----------------------------------- | ---------------------------: |
+| Raw dataset size                    | 445,132 rows × 326 variables |
+| Analytical sample                   |          440,111 respondents |
+| Positive self-reported MI/CHD cases |                       39,751 |
+| Positive prevalence                 |                        9.03% |
+| Retained raw predictors             |                          120 |
+| Encoded model features              |                          500 |
+| Held-out test set                   |           88,023 respondents |
+| Held-out test positive cases        |                        7,950 |
 
-Analytical sample:
-
-- 440,111 rows after excluding missing target labels
-- 120 retained raw predictors after leakage, missingness and feature-exclusion checks
-- 500 encoded model features after preprocessing
-
-The raw BRFSS dataset is not included in this repository. The notebook downloads the dataset programmatically using `kagglehub`.
+---
 
 ## Target variable
 
-The binary target was derived from `_MICHD`, the CDC-calculated indicator of self-reported myocardial infarction or coronary heart disease.
+The binary target was based on `_MICHD`, the CDC-derived BRFSS indicator for self-reported myocardial infarction, angina or coronary heart disease.
 
-Target definition:
+| Target value | Meaning                 |
+| ------------ | ----------------------- |
+| 1            | Self-reported MI/CHD    |
+| 0            | No self-reported MI/CHD |
 
-- `1` = self-reported MI/CHD
-- `0` = no self-reported MI/CHD
+The target was audited against the underlying BRFSS cardiovascular variables `CVDINFR4` and `CVDCRHD4`. The reconstructed target matched `_MICHD` for all 440,111 comparable rows, confirming coding consistency.
 
-The target was validated against the underlying cardiovascular variables used to construct MI/CHD status. Direct target or leakage variables were excluded before modelling.
+Important limitation: the outcome is self-reported and cross-sectional. The model predicts reported MI/CHD status, not clinically adjudicated disease or future cardiovascular events.
 
-Important limitation: the outcome is self-reported and survey-based. It is not clinically adjudicated heart disease. The model therefore predicts reported MI/CHD status rather than confirmed clinical disease.
+---
 
-## Methods summary
+## Analytical workflow
 
-The workflow includes:
+The notebook follows the workflow used in the report:
 
-1. Project setup and reproducibility checks
-2. Dataset loading and validation
-3. Initial data audit
+1. Project setup and reproducibility controls
+2. Programmatic BRFSS 2022 download using `kagglehub`
+3. Dataset shape and checksum verification
 4. Target definition and validation
-5. BRFSS-specific missing-code cleaning
-6. Continuous-variable protection
-7. Leakage control and feature selection
-8. Stratified train/test split
-9. Feature engineering and preprocessing
-10. Logistic regression baseline
-11. Random Forest model
-12. XGBoost model
-13. MLP neural-network comparator
-14. Model comparison
-15. Threshold analysis
-16. Model stability check
+5. Exploratory data audit
+6. BRFSS-specific missing-code handling
+7. Continuous/count-variable protection
+8. Leakage and feature-exclusion controls
+9. Stratified train-test split before preprocessing
+10. Pipeline-based imputation, scaling and one-hot encoding
+11. Logistic regression baseline
+12. Random forest comparator
+13. XGBoost comparator
+14. MLP neural-network comparator
+15. Default-threshold model comparison
+16. Threshold analysis
 17. Calibration analysis
-18. Feature importance and interpretability
-19. Subgroup/fairness analysis
-20. Final reproducibility summary
+18. Cross-validation and repeated-seed stability checks
+19. Paired statistical testing and bootstrap uncertainty
+20. Feature importance and SHAP interpretation
+21. Exploratory subgroup error analysis
+22. Export of report-ready tables, figures, README, requirements and methods decision log
+
+Preprocessing was fitted inside model pipelines after the train-test split to reduce leakage risk.
+
+---
+
+## Data cleaning and leakage control
+
+BRFSS uses variable-specific survey codes for refusal, uncertainty and inapplicability. The notebook therefore applies BRFSS-specific cleaning rather than a single global missing-code replacement rule.
+
+Variables were excluded if they were:
+
+* direct target or target-component variables;
+* conservative clinical-overlap leakage controls;
+* administrative, identifier or survey-design variables;
+* raw measurement-entry variables where cleaner derived variables were available;
+* contextual variables not appropriate for the supervised classification task;
+* variables with more than 50% missingness;
+* constant or no-variation variables.
+
+The final model matrix contained 120 retained raw predictors and 500 encoded model features.
+
+---
 
 ## Feature engineering and preprocessing
 
-Feature preparation included:
+Continuous/count-style variables were median-imputed and standardised where required. Categorical and survey-code variables were mode-imputed and one-hot encoded using rare-category grouping.
 
-- BRFSS-specific missing-code handling
-- protection of continuous or count-style variables from inappropriate missing-code conversion
-- removal of direct target/leakage variables
-- removal of administrative and survey-design variables
-- removal of variables with more than 50% missingness
-- removal of constant/no-variation variables
-- separation of continuous/count-style features from categorical/code features
-- median imputation for continuous/count-style features
-- most-frequent imputation for categorical/code features
-- one-hot encoding of categorical/code variables
-- scaling for scale-sensitive models
-- unscaled preprocessing for tree-based models
+| Model type          | Preprocessing                |
+| ------------------- | ---------------------------- |
+| Logistic regression | Scaled pipeline              |
+| MLP                 | Scaled pipeline              |
+| Random forest       | Unscaled tree-based pipeline |
+| XGBoost             | Unscaled tree-based pipeline |
 
-Preprocessing was fitted inside model pipelines after the train/test split to reduce data leakage.
+---
 
 ## Models compared
 
-The following supervised classification models were compared:
+| Model                 | Role                           |
+| --------------------- | ------------------------------ |
+| Logistic regression   | Interpretable baseline         |
+| Random forest         | Non-linear ensemble comparator |
+| XGBoost               | Main complex tabular model     |
+| Multilayer perceptron | Neural-network comparator      |
 
-- Logistic Regression
-- Random Forest
-- XGBoost
-- Multilayer Perceptron neural network
+Class imbalance was handled through model weighting where supported. Synthetic oversampling was avoided in the primary workflow to preserve survey-response structure and reduce leakage risk.
 
-These models were selected to represent increasing model complexity:
+---
 
-- Logistic Regression: interpretable linear baseline
-- Random Forest: non-linear bagging ensemble
-- XGBoost: gradient boosting model for tabular prediction
-- MLP: neural-network comparator for encoded tabular features
+## Evaluation strategy
 
-More specialised deep-learning architectures such as CNNs, RNNs, transformers or autoencoders were not used because BRFSS is structured tabular survey data rather than imaging, sequential, text or representation-learning data.
+Because the positive MI/CHD class represented approximately 9.03% of the analytical sample, accuracy was not prioritised.
 
-## Evaluation metrics
+The analysis used:
 
-Because the positive MI/CHD class represented approximately 9.03% of the analytical sample, model evaluation was not based on accuracy alone.
+* ROC-AUC;
+* PR-AUC;
+* precision;
+* sensitivity/recall;
+* specificity;
+* F1-score;
+* Brier score;
+* confusion matrices;
+* runtime;
+* threshold analysis;
+* quantile calibration curves;
+* cross-validation;
+* repeated stratified train-test splits;
+* paired tests with Holm correction;
+* paired bootstrap uncertainty;
+* permutation importance;
+* SHAP;
+* subgroup error analysis.
 
-The following metrics were used:
+PR-AUC was prioritised because the outcome was imbalanced.
 
-- ROC-AUC
-- PR-AUC
-- Precision
-- Recall / sensitivity
-- Specificity
-- F1-score
-- Brier score
-- Confusion matrix
-- Training time
-- Threshold analysis
-- Calibration curves
-- Subgroup performance
+---
 
-## Main findings
+## Main held-out results
 
-XGBoost achieved the strongest default-threshold performance overall, with the highest ROC-AUC, PR-AUC and sensitivity, while also having the shortest training time.
+Held-out test-set performance at the default 0.50 threshold:
 
-However, improvements over logistic regression were modest. This suggests that model complexity provided incremental rather than transformative gains for this BRFSS tabular prediction task.
+| Model               | ROC-AUC | PR-AUC | Precision | Sensitivity | Specificity | F1-score |  Brier |  Runtime |
+| ------------------- | ------: | -----: | --------: | ----------: | ----------: | -------: | -----: | -------: |
+| Logistic regression |  0.8512 | 0.3668 |    0.2399 |      0.7951 |      0.7499 |   0.3686 | 0.1630 |  785.51s |
+| Random forest       |  0.8499 | 0.3609 |    0.2441 |      0.7886 |      0.7576 |   0.3728 | 0.1523 | 1449.36s |
+| XGBoost             |  0.8542 | 0.3701 |    0.2379 |      0.8131 |      0.7415 |   0.3682 | 0.1620 |   48.12s |
+| MLP                 |  0.8525 | 0.3679 |    0.5506 |      0.1020 |      0.9917 |   0.1721 | 0.0676 |  129.92s |
 
-Random Forest achieved similar predictive performance but required substantially longer runtime. The MLP achieved similar discrimination but was highly conservative at the default 0.50 threshold, requiring threshold adjustment to improve sensitivity and F1-score.
+XGBoost achieved the strongest held-out discrimination, but its improvement over logistic regression was small:
 
-The main conclusion is that model usefulness depends not only on ROC-AUC, but also on threshold behaviour, calibration, interpretability, fairness and computational cost.
+| Comparison                            | Difference |
+| ------------------------------------- | ---------: |
+| XGBoost - logistic regression ROC-AUC |    +0.0030 |
+| XGBoost - logistic regression PR-AUC  |    +0.0033 |
 
-## Report
+Bootstrap analysis supported a small ROC-AUC advantage, but the PR-AUC confidence interval crossed zero. The main conclusion is that XGBoost was a marginally stronger classifier, not a clearly superior or clinically deployable risk model.
 
-The full academic report is provided as `report.pdf`.
+---
 
-The report contains the background, methods, results, critical discussion, limitations, ethics/fairness considerations and references. The notebook provides the reproducible technical workflow supporting the report.
+## Threshold, calibration and runtime findings
 
-## How to run the notebook
+Model usefulness depended strongly on threshold choice.
+
+Key findings:
+
+* The MLP had competitive ROC-AUC and PR-AUC but very low default-threshold sensitivity.
+* Lowering the MLP threshold from 0.50 to 0.10 increased sensitivity from 0.1020 to 0.8216 at the cost of precision.
+* Logistic regression, random forest and XGBoost substantially overpredicted MI/CHD status in the highest calibration bin.
+* For XGBoost, the highest-bin mean predicted probability was 0.8520, while the observed event rate was 0.3870.
+* XGBoost trained substantially faster than random forest while achieving stronger discrimination.
+
+Predicted probabilities should therefore be interpreted as classification scores within this survey sample, not as reliable clinical risk estimates without recalibration.
+
+---
+
+## Stability and uncertainty
+
+Stability and uncertainty analyses included:
+
+* 3-fold stratified cross-validation on a 120,000-row training sample;
+* five repeated stratified 80/20 splits;
+* paired t-tests with Holm correction;
+* 1,000 paired bootstrap resamples of held-out predictions.
+
+Key uncertainty findings:
+
+| Comparison                    | Metric  | Result                            |
+| ----------------------------- | ------- | --------------------------------- |
+| XGBoost - logistic regression | ROC-AUC | +0.0025; Holm-adjusted p = 0.002  |
+| XGBoost - logistic regression | PR-AUC  | +0.0052; Holm-adjusted p = 0.021  |
+| Bootstrap, 1,000 resamples    | ROC-AUC | +0.0031; 95% CI 0.0022 to 0.0040  |
+| Bootstrap, 1,000 resamples    | PR-AUC  | +0.0032; 95% CI -0.0003 to 0.0066 |
+
+The PR-AUC bootstrap interval crossed zero, reinforcing that the imbalance-aware gain over logistic regression was uncertain and practically small.
+
+---
+
+## Interpretability and subgroup analysis
+
+Interpretability analyses included built-in tree importance, permutation importance and SHAP for XGBoost.
+
+Important interpretation points:
+
+* Feature attributions reflected clinical-history, self-rated health, demographic, healthcare-access and survey-response variables.
+* Feature importance was interpreted as fitted model behaviour, not causal evidence.
+* SHAP and permutation importance did not rank all variables consistently.
+* Sparse one-hot encoded categories were interpreted cautiously.
+
+Subgroup analysis was performed as an exploratory error audit using XGBoost predictions on the held-out test set. It examined available BRFSS demographic and socioeconomic variables, including age, sex, race/ethnicity, education and income.
+
+Across income groups:
+
+* false-negative rates ranged from approximately 10% to 38%;
+* false-positive rates ranged from approximately 10% to 52%.
+
+These findings indicate that aggregate ROC-AUC and PR-AUC did not fully describe error behaviour across subgroups. They should not be interpreted as definitive evidence of directional socioeconomic bias.
+
+---
+
+## How to run in Google Colab
 
 1. Open `final_notebook.ipynb` in Google Colab.
-2. Run all cells from the top.
-3. The notebook downloads the BRFSS 2022 dataset using `kagglehub`.
-4. Outputs are saved to the `outputs/` directory.
+2. Select a standard CPU runtime.
+3. Run all cells from the top.
+4. The notebook downloads the BRFSS 2022 dataset using `kagglehub`.
+5. Outputs are saved to the `outputs/` directory.
 
-Expected runtime: approximately 30–60 minutes on Google Colab CPU, depending on runtime availability.
+Expected runtime: approximately **2-3 hours on a standard Google Colab CPU runtime**, depending on runtime availability and whether optional interpretability/stability sections are rerun.
 
-## Requirements
+---
 
-Core Python libraries:
+## Requirements and environment
 
-- pandas
-- numpy
-- matplotlib
-- scikit-learn
-- xgboost
-- kagglehub
+Core packages are listed in `requirements.txt`.
 
-These are listed in `requirements.txt`.
-
-A minimal `requirements.txt` should contain:
+Minimum required packages:
 
 ```text
 pandas
 numpy
-matplotlib
 scikit-learn
 xgboost
+scipy
+matplotlib
+shap
 kagglehub
 ```
+
+The notebook also exports:
+
+* `requirements_pinned.txt`
+* `outputs/environment_versions.csv`
+
+These files record the exact package versions used in the Colab runtime.
+
+---
 
 ## Repository structure
 
@@ -197,54 +285,99 @@ kagglehub
 ├── report.pdf
 ├── final_notebook.ipynb
 ├── requirements.txt
+├── requirements_pinned.txt
+├── methods_decision_log.csv
 └── outputs/
+    ├── environment_versions.csv
     ├── model comparison tables
     ├── threshold analysis outputs
     ├── calibration outputs
-    ├── feature importance outputs
-    ├── subgroup/fairness outputs
+    ├── stability outputs
+    ├── interpretability outputs
+    ├── subgroup error outputs
     ├── plots
     └── summary files
 ```
 
-## Reproducibility
+Update file names if the submitted repository uses different final names.
 
-The notebook is designed to run from a clean Google Colab runtime.
+---
 
-Key reproducibility steps include:
+## Reproducibility notes
 
-- programmatic dataset download
-- dataset shape validation
-- target validation
-- fixed random seed
-- stratified train/test split
-- leakage-variable exclusion
-- pipeline-based preprocessing
-- model outputs saved to CSV
-- plots saved to PNG
-- final summary outputs saved automatically
+Key reproducibility controls include:
 
-Preprocessing is fitted inside model pipelines after the train/test split to reduce data leakage.
+* programmatic dataset download;
+* dataset shape validation;
+* SHA256 checksum verification;
+* fixed random seeds;
+* stratified train-test split;
+* preprocessing inside model pipelines;
+* leakage-variable exclusions before modelling;
+* exported tables and plots;
+* environment-version export;
+* methods decision log.
+
+Primary model comparison used the full held-out test set. Reduced samples were used only for computationally expensive secondary analyses, including tuning, cross-validation, permutation importance and SHAP.
+
+---
+
+## Methods decision log
+
+The repository includes a methods decision log documenting major analytical decisions and their rationale. This supports reproducibility and transparency for choices such as:
+
+* dataset selection;
+* target definition;
+* BRFSS-specific missing-code handling;
+* leakage-variable exclusion;
+* high-missingness exclusions;
+* model selection;
+* class-imbalance handling;
+* threshold analysis;
+* calibration assessment;
+* interpretability methods;
+* subgroup error analysis;
+* non-deployment interpretation.
+
+---
 
 ## Limitations
 
 Key limitations include:
 
-- The outcome is self-reported MI/CHD, not clinically confirmed disease.
-- The dataset is cross-sectional, so the model predicts reported disease status rather than future incident disease.
-- The positive class is imbalanced, limiting precision.
-- Feature importance is predictive, not causal.
-- The model was evaluated on a held-out BRFSS test set but was not externally validated on another dataset or survey year.
-- Subgroup analysis is an error-pattern audit, not proof of fairness.
-- Predicted probabilities should be interpreted as survey-based reported-risk estimates, not clinical diagnosis probabilities.
-- The model is not intended for clinical diagnosis or direct deployment without further validation.
+* self-reported MI/CHD rather than clinically adjudicated disease;
+* cross-sectional design rather than incident cardiovascular risk prediction;
+* no external validation on another survey year or clinical cohort;
+* no survey-weighted population-level performance estimation;
+* reduced samples for computationally expensive secondary analyses;
+* feature attribution is predictive, not causal;
+* subgroup analysis is exploratory and not a formal fairness assessment;
+* predicted probabilities are not calibrated clinical risk estimates;
+* no clinical deployment claim.
+
+---
 
 ## Ethical and fairness considerations
 
-Because the target is self-reported, predictions may reflect healthcare access, diagnosis opportunity, recall, health literacy and survey response patterns, not only underlying disease status.
+Because the target is self-reported, predictions may reflect healthcare access, diagnostic opportunity, recall, health literacy and survey-response behaviour as well as underlying cardiovascular morbidity.
 
-The subgroup analysis is included to examine whether error patterns vary across available BRFSS demographic groups. It should not be interpreted as proof that the model is fair. Further validation would be required before any operational or public-health deployment.
+Subgroup analysis was included as an exploratory fairness-relevant error audit across available BRFSS demographic and socioeconomic variables. Further validation, recalibration and formal fairness evaluation would be required before any public-health or clinical use.
+
+No attempt was made to identify individuals. BRFSS is a public, de-identified survey dataset.
+
+---
 
 ## AI use declaration
 
-Generative AI was used to support code structuring, debugging, explanation of machine-learning concepts and drafting of written sections. All outputs were reviewed, edited and validated by the author. The analysis, interpretation and final submitted work remain the author’s responsibility.
+Generative AI was used to support code structuring, debugging, explanation of machine-learning concepts, workflow checking and drafting support. All outputs were reviewed, edited and validated by the author. The analysis, interpretation and final submitted work remain the author’s responsibility.
+
+---
+
+## Report
+
+The full academic report is provided as:
+
+```text
+report.pdf
+```
+
