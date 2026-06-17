@@ -3,5 +3,7 @@ numpy
 matplotlib
 scikit-learn
 xgboost
+scipy
+shap
 kagglehub
 jupyter
