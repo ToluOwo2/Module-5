@@ -16,6 +16,25 @@ To what extent do increasingly complex machine-learning models improve classific
 
 ---
 
+## Repository structure
+
+The notebook and report use the same base filename. They are distinguished by file extension.
+
+```text
+.
+├── README.md
+├── HDS_ML_TOLUWALOPEOWOEYE_2606.ipynb
+├── HDS_ML_TOLUWALOPEOWOEYE_2606.docx
+├── HDS_ML_TOLUWALOPEOWOEYE_2606.pdf
+├── requirements.txt
+├── requirements_pinned.txt
+└── methods_decision_log.md
+```
+
+The notebook generates an `outputs/` folder when run. Generated outputs are not required to be stored permanently in the repository because they can be reproduced from the notebook.
+
+---
+
 ## Dataset
 
 **Dataset:** Behavioral Risk Factor Surveillance System 2022
@@ -58,27 +77,28 @@ Important limitation: the outcome is self-reported and cross-sectional. The mode
 The notebook follows the workflow used in the report:
 
 1. Project setup and reproducibility controls
-2. Programmatic BRFSS 2022 download using `kagglehub`
-3. Dataset shape and checksum verification
-4. Target definition and validation
-5. Exploratory data audit
-6. BRFSS-specific missing-code handling
-7. Continuous/count-variable protection
-8. Leakage and feature-exclusion controls
-9. Stratified train-test split before preprocessing
-10. Pipeline-based imputation, scaling and one-hot encoding
-11. Logistic regression baseline
-12. Random forest comparator
-13. XGBoost comparator
-14. MLP neural-network comparator
-15. Default-threshold model comparison
-16. Threshold analysis
-17. Calibration analysis
-18. Cross-validation and repeated-seed stability checks
-19. Paired statistical testing and bootstrap uncertainty
-20. Feature importance and SHAP interpretation
-21. Exploratory subgroup error analysis
-22. Export of report-ready tables, figures, README, requirements and methods decision log
+2. Package-version and environment audit
+3. Programmatic BRFSS 2022 download using `kagglehub`
+4. Dataset shape and checksum verification
+5. Target definition and validation
+6. Exploratory data audit
+7. BRFSS-specific missing-code handling
+8. Continuous/count-variable protection
+9. Leakage and feature-exclusion controls
+10. Stratified train-test split before preprocessing
+11. Pipeline-based imputation, scaling and one-hot encoding
+12. Logistic regression baseline
+13. Random forest comparator
+14. XGBoost comparator
+15. MLP neural-network comparator
+16. Default-threshold model comparison
+17. Threshold analysis
+18. Calibration analysis
+19. Cross-validation and repeated-seed stability checks
+20. Paired statistical testing and bootstrap uncertainty
+21. Feature importance and SHAP interpretation
+22. Exploratory subgroup error analysis
+23. Export of report-supporting outputs
 
 Preprocessing was fitted inside model pipelines after the train-test split to reduce leakage risk.
 
@@ -241,11 +261,11 @@ These findings indicate that aggregate ROC-AUC and PR-AUC did not fully describe
 
 ## How to run in Google Colab
 
-1. Open `final_notebook.ipynb` in Google Colab.
+1. Open `HDS_ML_TOLUWALOPEOWOEYE_2606.ipynb` in Google Colab.
 2. Select a standard CPU runtime.
 3. Run all cells from the top.
 4. The notebook downloads the BRFSS 2022 dataset using `kagglehub`.
-5. Outputs are saved to the `outputs/` directory.
+5. The notebook generates an `outputs/` folder during execution.
 
 Expected runtime: approximately **2-3 hours on a standard Google Colab CPU runtime**, depending on runtime availability and whether optional interpretability/stability sections are rerun.
 
@@ -266,40 +286,25 @@ scipy
 matplotlib
 shap
 kagglehub
+jupyter
 ```
 
-The notebook also exports:
-
-* `requirements_pinned.txt`
-* `outputs/environment_versions.csv`
-
-These files record the exact package versions used in the Colab runtime.
+Pinned package versions from the final Colab runtime are listed in `requirements_pinned.txt`.
 
 ---
 
-## Repository structure
+## Outputs
+
+The notebook generates an `outputs/` folder when run. Generated outputs are not required to be stored permanently in the repository because they can be reproduced from the notebook.
+
+When the notebook is executed, the `outputs/` folder may include exported tables, figures, environment-version files, pinned requirements and report-supporting CSVs. Important reproducibility outputs include:
 
 ```text
-.
-├── README.md
-├── report.pdf
-├── final_notebook.ipynb
-├── requirements.txt
-├── requirements_pinned.txt
-├── methods_decision_log.csv
-└── outputs/
-    ├── environment_versions.csv
-    ├── model comparison tables
-    ├── threshold analysis outputs
-    ├── calibration outputs
-    ├── stability outputs
-    ├── interpretability outputs
-    ├── subgroup error outputs
-    ├── plots
-    └── summary files
+outputs/00_environment_versions.csv
+outputs/requirements_pinned.txt
 ```
 
-Update file names if the submitted repository uses different final names.
+The exported outputs are intended to support traceability between the notebook and the written report. If the `outputs/` folder is not present in the repository, it can be regenerated by running the notebook from top to bottom.
 
 ---
 
@@ -314,8 +319,8 @@ Key reproducibility controls include:
 * stratified train-test split;
 * preprocessing inside model pipelines;
 * leakage-variable exclusions before modelling;
-* exported tables and plots;
-* environment-version export;
+* package-version export;
+* pinned package requirements;
 * methods decision log.
 
 Primary model comparison used the full held-out test set. Reduced samples were used only for computationally expensive secondary analyses, including tuning, cross-validation, permutation importance and SHAP.
@@ -324,7 +329,7 @@ Primary model comparison used the full held-out test set. Reduced samples were u
 
 ## Methods decision log
 
-The repository includes a methods decision log documenting major analytical decisions and their rationale. This supports reproducibility and transparency for choices such as:
+The repository includes `methods_decision_log.md`, which documents major analytical decisions and their rationale. This supports reproducibility and transparency for choices such as:
 
 * dataset selection;
 * target definition;
@@ -367,7 +372,7 @@ No attempt was made to identify individuals. BRFSS is a public, de-identified su
 
 ---
 
-## AI use declaration
+## Use of generative AI
 
 Generative AI was used to support code structuring, debugging, explanation of machine-learning concepts, workflow checking and drafting support. All outputs were reviewed, edited and validated by the author. The analysis, interpretation and final submitted work remain the author’s responsibility.
 
@@ -378,6 +383,13 @@ Generative AI was used to support code structuring, debugging, explanation of ma
 The full academic report is provided as:
 
 ```text
-report.pdf
+HDS_ML_TOLUWALOPEOWOEYE_2606.pdf
 ```
+
+A Word version may also be included as:
+
+```text
+HDS_ML_TOLUWALOPEOWOEYE_2606.docx
+```
+
 
