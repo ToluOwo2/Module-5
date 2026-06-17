@@ -1,5 +1,10 @@
 # Module 5: Predicting Self-Reported MI/CHD from BRFSS 2022
 
+## Abstract
+
+This project applies supervised machine-learning methods to classify self-reported myocardial infarction or coronary heart disease (MI/CHD) status using the 2022 Behavioral Risk Factor Surveillance System (BRFSS) dataset. The analysis evaluates whether more complex tabular models offer a practically meaningful improvement over an interpretable logistic regression baseline under leakage-controlled and imbalance-aware conditions. The analytical sample included 440,111 respondents, with a positive self-reported MI/CHD prevalence of 9.03%. Logistic regression, random forest, XGBoost and a multilayer perceptron were compared using ROC-AUC, PR-AUC, threshold behaviour, calibration, runtime, stability checks, bootstrap uncertainty, interpretability methods and subgroup error analysis. XGBoost achieved the strongest held-out discrimination, with ROC-AUC 0.8542 and PR-AUC 0.3701, but its improvement over logistic regression was small. Bootstrap analysis showed that the PR-AUC confidence interval for the XGBoost-logistic regression difference crossed zero, reinforcing that the imbalance-aware gain was uncertain and practically modest. The final model should therefore be interpreted as a marginally stronger survey-based classifier of reported MI/CHD status, not as a clinical diagnostic model, cardiovascular risk calculator or deployable decision-support system.
+
+
 ## Project overview
 
 This repository contains the reproducible Google Colab workflow for a supervised machine-learning analysis of self-reported myocardial infarction or coronary heart disease (MI/CHD) status using the 2022 Behavioral Risk Factor Surveillance System (BRFSS) dataset.
